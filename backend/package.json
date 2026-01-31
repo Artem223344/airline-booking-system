@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Running tests... SUCCESS\" && exit 0",
+    "test": "jest",
     "start": "node server.js"
   },
   "keywords": [],
@@ -15,5 +15,9 @@
     "body-parser": "^2.2.2",
     "cors": "^2.8.5",
     "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2"
   }
 }

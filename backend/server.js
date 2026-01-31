@@ -674,6 +674,11 @@ h1 {
 // START SERVER
 // =============================
 
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+module.exports = app;
+
+// Запускаємо сервер тільки якщо файл запущено напряму (не через тести)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
