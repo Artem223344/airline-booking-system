@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Airline Services</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="header">
+    <div class="logo">Airline<span>Services</span></div>
+
+    <nav class="nav">
+        <button class="nav-link active" data-view="searchView">Flights</button>
+        <button class="nav-link" data-view="bookingsView">My bookings</button>
+        <button class="nav-link" data-view="helpView">Help</button>
+        <button class="nav-link admin-only hidden" data-view="adminView">Admin</button>
+    </nav>
+
+    <div class="auth">
+        <span id="currentUserLabel">Guest</span>
+        <button id="loginBtn" class="btn small">Sign in</button>
+        <button id="logoutBtn" class="btn small hidden">Log out</button>
+    </div>
+</header>
+
+<main class="main">
+
+    <!-- 1. SEARCH -->
+    <section id="searchView" class="view active">
+        <section class="hero">
+            <h1>Find your perfect flight</h1>
+            <p>Book tickets quickly and easily</p>
+
+            <form id="searchForm" class="search-box">
+                <div class="field">
+                    <label>From</label>
+                    <input type="text" id="fromInput" list="fromList" placeholder="Kyiv" />
+                    <datalist id="fromList"></datalist>
+                </div>
+
+                <div class="field">
+                    <label>To</label>
+                    <input type="text" id="toInput" list="toList" placeholder="London" />
+                    <datalist id="toList"></datalist>
+                </div>
+
+                <div class="field">
+                    <label>Date</label>
+                    <input type="date" id="dateInput" />
+                </div>
+
+                <div class="field">
+                    <label>Passengers</label>
+                    <select id="passengersInput" disabled>
+                        <option>Auto (by selected seats)</option>
+                    </select>
+                </div>
+
+                <button class="btn primary search-btn" type="submit">Search flights</button>
+            </form>
+        </section>
+
+        <section class="results">
+            <h2>Search results</h2>
+            <div id="resultsContainer" class="cards"></div>
+            <p id="noResults" class="muted hidden">No flights found. Try changing search parameters.</p>
+        </section>
+
+        <section class="recommended">
+            <h2>Recommended flights</h2>
+            <div id="recommendedContainer" class="cards"></div>
+        </section>
+    </section>
+
+    <!-- 2. BOOKINGS -->
+    <section id="bookingsView" class="view">
+        <h2>My bookings</h2>
+        <p class="muted small">Bookings are saved in JSON DB and linked to your account.</p>
+        <div id="bookingsContainer" class="cards"></div>
+        <p id="noBookings" class="muted">You have no bookings yet.</p>
+    </section>
+
+    <!-- 3. HELP -->
+    <section id="helpView" class="view">
+        <h2>Help & Support</h2>
+        <p class="muted small">
+            If you have any questions about your flights or bookings, send a message to our support.
+        </p>
+
+        <form id="helpForm" class="help-box">
+            <div class="field">
+                <label>Your message</label>
+                <textarea id="helpMessage" rows="4" placeholder="Describe your issue or question..."></textarea>
+            </div>
+            <button class="btn primary" type="submit">Send to support</button>
+        </form>
+    </section>
+
+    <!-- 4. ADMIN -->
+    <section id="adminView" class="view">
+        <h2>Admin: Manage flights</h2>
+
+        <form id="flightForm" class="admin-form">
+            <input type="hidden" id="flightId" />
+            <div class="field-inline">
+                <label>From</label>
+                <input type="text" id="flightFrom" required />
+            </div>
+            <div class="field-inline">
+                <label>To</label>
+                <input type="text" id="flightTo" required />
+            </div>
+            <div class="field-inline">
+                <label>Date</label>
+                <input type="date" id="flightDate" required />
+            </div>
+            <div class="field-inline">
+                <label>Duration</label>
+                <input type="text" id="flightDuration" placeholder="3h 20m" required />
+            </div>
+            <div class="field-inline">
+                <label>Airline</label>
+                <input type="text" id="flightAirline" placeholder="AirlineServices" required />
+            </div>
+            <div class="field-inline">
+                <label>Price ($)</label>
+                <input type="number" id="flightPrice" required />
+            </div>
+            <div class="field-inline">
+                <label>Total seats</label>
+                <input type="number" id="flightSeats" min="1" required />
+            </div>
+
+            <button class="btn primary" type="submit">Save flight</button>
+            <button class="btn secondary" type="button" id="resetFlightForm">Clear</button>
+        </form>
+
+        <h3>All flights</h3>
+        <div id="adminFlightsContainer" class="cards"></div>
+
+        <h3>Support messages</h3>
+        <div id="supportMessagesContainer" class="cards"></div>
+    </section>
+
+</main>
+
+<!-- BOOKING MODAL -->
+<div id="bookingModal" class="modal hidden">
+    <div class="modal-content wide">
+        <h2>Book flight</h2>
+        <p id="bookingFlightInfo" class="muted"></p>
+        <form id="bookingForm">
+            <div class="field">
+                <label>Full name</label>
+                <input type="text" id="bookingName" required />
+            </div>
+            <div class="field">
+                <label>Email</label>
+                <input type="email" id="bookingEmail" required />
+            </div>
+
+            <div class="field">
+                <label>Seats</label>
+                <div id="seatGrid" class="seat-grid"></div>
+                <p id="seatHint" class="muted small"></p>
+            </div>
+
+            <div class="field extras-field">
+                <label>Additional services (per passenger)</label>
+                <div class="extras-options">
+                    <label><input type="checkbox" id="extraMeal" /> Meal (+$20)</label>
+                    <label><input type="checkbox" id="extraInsurance" /> Insurance (+$15)</label>
+                    <label><input type="checkbox" id="extraUpgrade" /> Upgrade class (+$50)</label>
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Passengers (auto)</label>
+                <input type="number" id="bookingPassengers" value="1" readonly />
+            </div>
+
+            <p class="muted"><strong>Total price: </strong><span id="totalPriceDisplay">$0</span></p>
+
+            <button class="btn primary" type="submit">Confirm booking</button>
+            <button class="btn secondary" type="button" id="closeBookingModal">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="paymentModal" class="modal hidden">
+    <div class="modal-content">
+        <h2>Payment</h2>
+        <p id="paymentBookingInfo" class="muted small"></p>
+
+        <form id="paymentForm">
+            <div class="field">
+                <label>Card number (demo)</label>
+                <input type="text" id="cardNumber" placeholder="1111 1111 1111 1111" />
+            </div>
+            <div class="field">
+                <label>Name on card</label>
+                <input type="text" id="cardName" />
+            </div>
+            <div class="field">
+                <label>Expiry</label>
+                <input type="text" id="cardExpiry" placeholder="12/34" />
+            </div>
+            <div class="field">
+                <label>CVV</label>
+                <input type="password" id="cardCvv" />
+            </div>
+
+            <button class="btn primary" type="submit">Pay</button>
+            <button class="btn secondary" type="button" id="closePaymentModal">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="authModal" class="modal hidden">
+    <div class="modal-content auth-modal">
+        <h2 id="authTitle">Sign in</h2>
+        <form id="authForm">
+            <div class="field">
+                <label>Email</label>
+                <input type="email" id="authEmail" required />
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" id="authPassword" required />
+            </div>
+            <p class="muted small">
+                Demo admin: <b>admin@airline.com</b> / <b>admin</b>
+            </p>
+            <button class="btn primary" type="submit">Sign in / Register</button>
+            <button class="btn secondary" type="button" id="closeAuthModal">Close</button>
+        </form>
+    </div>
+</div>
+
+<footer class="footer">
+    <a href="#">About airline</a>
+    <a href="#">Contact</a>
+    <a href="#" data-view-link="helpView">Help</a>
+    <a href="#">Privacy</a>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

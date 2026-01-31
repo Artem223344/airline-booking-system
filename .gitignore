@@ -1,1 +1,7 @@
+backend/db.json
+backend/node_modules/
+backend/package-lock.json
 node_modules/
+package-lock.json
+*.log
+.DS_Store
