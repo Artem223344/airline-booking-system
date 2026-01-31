@@ -221,6 +221,12 @@
       "email": "Arty@gmail.com",
       "password": "1234",
       "role": "user"
+    },
+    {
+      "id": 1769883942446,
+      "email": "sadads@gmail.com",
+      "password": "івфіфв",
+      "role": "user"
     }
   ],
   "supportMessages": [
