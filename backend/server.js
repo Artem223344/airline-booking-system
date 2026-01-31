@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
+const { calculateTotal } = require("./utils");
 
 const app = express();
 const PORT = 3000;
@@ -249,14 +250,8 @@ app.post("/api/bookings", (req, res) => {
   const passengers = requestedSeats.length;
 
   const ex = extras || {};
-  const basePrice = flight.price * passengers;
-
-  let extraPrice = 0;
-  if (ex.meal) extraPrice += 20 * passengers;
-  if (ex.insurance) extraPrice += 15 * passengers;
-  if (ex.upgrade) extraPrice += 50 * passengers;
-
-  const totalPrice = basePrice + extraPrice;
+  const pricing = calculateTotal(flight.price, passengers, ex);
+  const { basePrice, extraPrice, totalPrice } = pricing;
 
   flight.bookedSeats = [...flight.bookedSeats, ...requestedSeats];
   const usedCount = flight.bookedSeats.length;
