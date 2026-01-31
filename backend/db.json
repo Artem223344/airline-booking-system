@@ -1,0 +1,235 @@
+{
+  "flights": [
+    {
+      "id": 1,
+      "from": "Kyiv",
+      "to": "London",
+      "date": "2026-02-01",
+      "duration": "3h 20m",
+      "airline": "AirlineServices",
+      "price": 120,
+      "seats": 100,
+      "bookedSeats": []
+    },
+    {
+      "id": 2,
+      "from": "Kyiv",
+      "to": "Paris",
+      "date": "2026-02-01",
+      "duration": "3h 05m",
+      "airline": "AirlineServices",
+      "price": 130,
+      "seats": 80,
+      "bookedSeats": []
+    },
+    {
+      "id": 3,
+      "from": "Lviv",
+      "to": "Warsaw",
+      "date": "2026-02-01",
+      "duration": "1h 10m",
+      "airline": "PolAir",
+      "price": 70,
+      "seats": 48,
+      "bookedSeats": [
+        1,
+        2
+      ],
+      "totalSeats": 50
+    },
+    {
+      "id": 4,
+      "from": "Kyiv",
+      "to": "London",
+      "date": "2026-02-02",
+      "duration": "3h 15m",
+      "airline": "UKR Air",
+      "price": 140,
+      "seats": 60,
+      "bookedSeats": []
+    },
+    {
+      "id": 1768443420260,
+      "from": "Berlin",
+      "to": "Rum",
+      "date": "2026-01-22",
+      "duration": "2",
+      "airline": "POPAir",
+      "price": 100,
+      "seats": 17,
+      "bookedSeats": [
+        1,
+        2,
+        3,
+        4,
+        22,
+        11
+      ],
+      "totalSeats": 23
+    }
+  ],
+  "bookings": [
+    {
+      "id": 1768443519280,
+      "flightId": 1768443420260,
+      "userEmail": "Arty@gmail.com",
+      "name": "Аrtem",
+      "email": "smartxiaomi63@gmail.com",
+      "passengers": 1,
+      "seats": [],
+      "status": "Canceled",
+      "createdAt": "2026-01-15T02:18:39.280Z"
+    },
+    {
+      "id": 1768447229453,
+      "flightId": 1768443420260,
+      "userEmail": "admin@airline.com",
+      "name": "Аrtem",
+      "email": "smartxiaomi63@gmail.com",
+      "passengers": 2,
+      "seats": [
+        1,
+        2
+      ],
+      "status": "Confirmed",
+      "createdAt": "2026-01-15T03:20:29.453Z",
+      "paymentStatus": "Paid",
+      "paymentInfo": {
+        "method": "Card",
+        "paidAt": "2026-01-15T03:48:13.102Z",
+        "last4": "1111"
+      }
+    },
+    {
+      "id": 1768448396110,
+      "flightId": 3,
+      "userEmail": "admin@airline.com",
+      "name": "Аrtem",
+      "email": "smartxiaomi63@gmail.com",
+      "passengers": 2,
+      "seats": [
+        1,
+        2
+      ],
+      "status": "Confirmed",
+      "createdAt": "2026-01-15T03:39:56.110Z"
+    },
+    {
+      "id": 1768448866246,
+      "flightId": 1768443420260,
+      "userEmail": "admin@airline.com",
+      "name": "Аrtem",
+      "email": "smartxiaomi63@gmail.com",
+      "passengers": 1,
+      "seats": [
+        3
+      ],
+      "extras": {
+        "meal": false,
+        "insurance": false,
+        "upgrade": true
+      },
+      "basePrice": 100,
+      "extraPrice": 50,
+      "totalPrice": 150,
+      "status": "Confirmed",
+      "paymentStatus": "Unpaid",
+      "paymentInfo": null,
+      "createdAt": "2026-01-15T03:47:46.246Z"
+    },
+    {
+      "id": 1768472424163,
+      "flightId": 1768443420260,
+      "userEmail": "admin@airline.com",
+      "name": "lkdal",
+      "email": "fdssf@gmail.com",
+      "passengers": 1,
+      "seats": [
+        4
+      ],
+      "extras": {
+        "meal": true,
+        "insurance": false,
+        "upgrade": false
+      },
+      "basePrice": 100,
+      "extraPrice": 20,
+      "totalPrice": 120,
+      "status": "Confirmed",
+      "paymentStatus": "Unpaid",
+      "paymentInfo": null,
+      "createdAt": "2026-01-15T10:20:24.163Z"
+    },
+    {
+      "id": 1768475296036,
+      "flightId": 1768443420260,
+      "userEmail": "Arty@gmail.com",
+      "name": "Аrtem",
+      "email": "smartxiaomi63@gmail.com",
+      "passengers": 1,
+      "seats": [
+        22
+      ],
+      "extras": {
+        "meal": false,
+        "insurance": true,
+        "upgrade": false
+      },
+      "basePrice": 100,
+      "extraPrice": 15,
+      "totalPrice": 115,
+      "status": "Confirmed",
+      "paymentStatus": "Unpaid",
+      "paymentInfo": null,
+      "createdAt": "2026-01-15T11:08:16.036Z"
+    },
+    {
+      "id": 1768475501875,
+      "flightId": 1768443420260,
+      "userEmail": "Arty@gmail.com",
+      "name": "Аrtem",
+      "email": "smartxiaomi63@gmail.com",
+      "passengers": 1,
+      "seats": [
+        11
+      ],
+      "extras": {
+        "meal": true,
+        "insurance": false,
+        "upgrade": false
+      },
+      "basePrice": 100,
+      "extraPrice": 20,
+      "totalPrice": 120,
+      "status": "Confirmed",
+      "paymentStatus": "Paid",
+      "paymentInfo": {
+        "method": "Card",
+        "paidAt": "2026-01-15T11:12:02.118Z",
+        "last4": "2222"
+      },
+      "createdAt": "2026-01-15T11:11:41.875Z"
+    }
+  ],
+  "users": [
+    {
+      "email": "admin@airline.com",
+      "password": "admin",
+      "role": "admin"
+    },
+    {
+      "email": "Arty@gmail.com",
+      "password": "1234",
+      "role": "user"
+    }
+  ],
+  "supportMessages": [
+    {
+      "id": 1768452092185,
+      "userEmail": "Arty@gmail.com",
+      "message": "цйуцйвцйвфіввфі",
+      "status": "new",
+      "createdAt": "2026-01-15T04:41:32.185Z"
+    }
+  ]
+}
