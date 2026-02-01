@@ -1,12 +1,18 @@
+require('dotenv').config(); // <--- ОБОВ'ЯЗКОВО ПЕРШИМ!
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const fs = require("fs");
 const path = require("path");
 const { calculateTotal } = require("./utils");
+// Імпортуємо нові функції пошти (переконайся, що в mailer.js вони називаються так само)
+const { sendVerificationEmail, sendTicketEmail } = require("./mailer");
 
 const app = express();
 const PORT = 3000;
+
+// Зміни цей порт, якщо твій сайт (Live Server) працює на іншому
+const FRONTEND_URL = "http://localhost:5500/airline-project/ui/index.html";
 
 app.use(cors());
 app.use(bodyParser.json());
@@ -77,9 +83,11 @@ function readDb() {
           email: "admin@airline.com",
           password: "admin",
           role: "admin",
+          isVerified: true, // Адмін завжди активний
+          verificationToken: null
         },
       ],
-      supportMessages: [], // <— додано
+      supportMessages: [],
     };
     fs.writeFileSync(DB_PATH, JSON.stringify(initial, null, 2), "utf8");
     return initial;
@@ -91,6 +99,126 @@ function readDb() {
 function writeDb(db) {
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), "utf8");
 }
+
+// =============================
+// AUTH API (LOGIN / REGISTER / VERIFY)
+// =============================
+
+app.post("/api/auth/login", (req, res) => {
+  const db = readDb();
+  const users = db.users || [];
+
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password required" });
+  }
+
+  const user = users.find((u) => u.email === email);
+  
+  // Перевірка пароля
+  if (!user || user.password !== password) {
+    return res.status(401).json({ error: "Invalid email or password" });
+  }
+
+  // === ПЕРЕВІРКА ВЕРИФІКАЦІЇ ===
+  // Якщо це не адмін і пошта не підтверджена — не пускаємо
+  if (user.role !== 'admin' && user.isVerified === false) {
+      return res.status(403).json({ error: "Please verify your email first! Check your inbox." });
+  }
+  // =============================
+
+  res.json({ email: user.email, role: user.role });
+});
+
+app.post("/api/auth/register", (req, res) => {
+  const db = readDb();
+  const users = db.users || [];
+
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password required" });
+  }
+
+  const existing = users.find((u) => u.email === email);
+  if (existing) {
+    return res.status(400).json({ error: "User already exists" });
+  }
+
+  const role = email === "admin@airline.com" ? "admin" : "user";
+  
+  // Генеруємо токен для підтвердження
+  const verificationToken = Math.random().toString(36).substring(2) + Date.now().toString(36);
+
+  const newUser = {
+    id: Date.now(),
+    email,
+    password,
+    role,
+    // Адмін активний одразу, звичайний юзер - ні
+    isVerified: role === 'admin' ? true : false,
+    verificationToken: role === 'admin' ? null : verificationToken
+  };
+
+  users.push(newUser);
+  db.users = users;
+  writeDb(db);
+
+  // === ВІДПРАВКА ЛИСТА З ПОСИЛАННЯМ ===
+  if (role !== 'admin') {
+      sendVerificationEmail(email, verificationToken);
+  }
+  // ====================================
+
+  res.status(201).json({ message: "Registration successful! Please check your email to verify." });
+});
+
+// === НОВИЙ МАРШРУТ: Клік по посиланню з пошти ===
+app.get("/api/auth/verify", (req, res) => {
+    const token = req.query.token;
+    
+    if (!token) {
+        return res.status(400).send("Invalid link");
+    }
+
+    const db = readDb();
+    const users = db.users || [];
+
+    // Шукаємо користувача з таким токеном
+    const user = users.find(u => u.verificationToken === token);
+
+    if (!user) {
+        return res.status(400).send("<h1>Error</h1><p>Invalid or expired token.</p>");
+    }
+
+    // Активуємо
+    user.isVerified = true;
+    user.verificationToken = null; // Токен більше не потрібен
+    
+    db.users = users;
+    writeDb(db);
+
+    // Показуємо красиву сторінку
+    res.send(`
+        <html>
+        <head>
+            <title>Email Verified</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f4; }
+                .container { background: white; padding: 40px; border-radius: 10px; display: inline-block; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+                h1 { color: #2f6bff; }
+                a { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #2f6bff; color: white; text-decoration: none; border-radius: 5px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Email Verified! ✅</h1>
+                <p>Your account has been successfully activated.</p>
+                <a href="${FRONTEND_URL}">Go to Login Page</a>
+            </div>
+        </body>
+        </html>
+    `);
+});
 
 // =============================
 // FLIGHTS API
@@ -249,6 +377,7 @@ app.post("/api/bookings", (req, res) => {
 
   const passengers = requestedSeats.length;
 
+  // Використовуємо функцію з utils.js
   const ex = extras || {};
   const pricing = calculateTotal(flight.price, passengers, ex);
   const { basePrice, extraPrice, totalPrice } = pricing;
@@ -360,65 +489,21 @@ app.post("/api/bookings/:id/pay", (req, res) => {
   db.bookings = bookings;
   writeDb(db);
 
+  // === ВІДПРАВКА КВИТКА ===
+  const flights = db.flights || [];
+  const flight = flights.find(f => f.id === booking.flightId);
+  if (flight) {
+      sendTicketEmail(booking, flight);
+  }
+  // ======================
+
   res.json(booking);
-});
-
-// =============================
-// AUTH API
-// =============================
-
-app.post("/api/auth/login", (req, res) => {
-  const db = readDb();
-  const users = db.users || [];
-
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password required" });
-  }
-
-  const user = users.find((u) => u.email === email);
-  if (!user || user.password !== password) {
-    return res.status(401).json({ error: "Invalid email or password" });
-  }
-
-  res.json({ email: user.email, role: user.role });
-});
-
-app.post("/api/auth/register", (req, res) => {
-  const db = readDb();
-  const users = db.users || [];
-
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: "Email and password required" });
-  }
-
-  const existing = users.find((u) => u.email === email);
-  if (existing) {
-    return res.status(400).json({ error: "User already exists" });
-  }
-
-  const role = email === "admin@airline.com" ? "admin" : "user";
-
-  const newUser = {
-    id: Date.now(),
-    email,
-    password,
-    role,
-  };
-
-  users.push(newUser);
-  db.users = users;
-  writeDb(db);
-
-  res.status(201).json({ email: newUser.email, role: newUser.role });
 });
 
 // =============================
 // HELP / SUPPORT API
 // =============================
 
-// user sends question to admin
 app.post("/api/help", (req, res) => {
   const db = readDb();
   const list = db.supportMessages || [];
@@ -443,7 +528,6 @@ app.post("/api/help", (req, res) => {
   res.status(201).json(msg);
 });
 
-// admin reads all messages
 app.get("/api/help", (req, res) => {
   const db = readDb();
   res.json(db.supportMessages || []);
@@ -671,7 +755,7 @@ h1 {
 
 module.exports = app;
 
-// Запускаємо сервер тільки якщо файл запущено напряму (не через тести)
+// Запускаємо сервер тільки якщо файл запущено напряму
 if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
