@@ -1,7 +1,7 @@
 // =============================
 // CONFIG
 // =============================
-const API_ROOT = "http://localhost:3000";
+const API_ROOT = "https://airline-api-artyom.onrender.com";
 const API_BASE = `${API_ROOT}/api`;
 const LS_USER = "airline_current_user";
 
