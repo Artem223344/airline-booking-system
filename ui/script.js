@@ -824,7 +824,7 @@ paymentForm.addEventListener("submit", async (e) => {
 });
 
 // =============================
-// AUTH
+// AUTH (FIXED FOR EMAIL VERIFICATION)
 // =============================
 function updateAuthUI() {
   if (currentUser) {
@@ -858,6 +858,7 @@ logoutBtn.addEventListener("click", () => {
   updateAuthUI();
 });
 
+// НОВА ЛОГІКА ВХОДУ ТА РЕЄСТРАЦІЇ
 authForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -870,29 +871,73 @@ authForm.addEventListener("submit", async (e) => {
   }
 
   try {
-    const user = await apiPost("/auth/login", { email, password });
-    currentUser = user;
-    saveCurrentUser(currentUser);
-    updateAuthUI();
-    authModal.classList.add("hidden");
-    return;
-  } catch (err) {
-    console.warn("Login failed, trying register:", err.message);
-  }
+    // 1. Спроба ВХОДУ (Login)
+    const loginRes = await fetch(`${API_BASE}/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
 
-  if (!confirm("Користувач не знайдений. Створити новий обліковий запис?")) {
-    return;
-  }
+    // A) Вхід успішний (200 OK)
+    if (loginRes.ok) {
+      const user = await loginRes.json();
+      currentUser = user;
+      saveCurrentUser(currentUser);
+      updateAuthUI();
+      authModal.classList.add("hidden");
+      return;
+    }
 
-  try {
-    const newUser = await apiPost("/auth/register", { email, password });
-    currentUser = newUser;
-    saveCurrentUser(currentUser);
-    updateAuthUI();
-    authModal.classList.add("hidden");
-    alert("Обліковий запис створено, ви увійшли в систему.");
+    const loginData = await loginRes.json();
+
+    // B) Вхід не вдався: ПОШТА НЕ ПІДТВЕРДЖЕНА (403)
+    if (loginRes.status === 403) {
+      alert(
+        loginData.error ||
+          "Будь ласка, спочатку підтвердіть вашу пошту (перевірте email)."
+      );
+      return; // Зупиняємось, не пропонуємо реєстрацію
+    }
+
+    // C) Вхід не вдався: Користувача немає або пароль невірний
+    // Запитуємо про реєстрацію
+    if (
+      !confirm(
+        "Користувач не знайдений або пароль невірний. Створити новий обліковий запис?"
+      )
+    ) {
+      return;
+    }
+
+    // 2. Спроба РЕЄСТРАЦІЇ (Register)
+    const regRes = await fetch(`${API_BASE}/auth/register`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const regData = await regRes.json();
+
+    if (regRes.ok) {
+      // D) Реєстрація успішна
+      // ВАЖЛИВО: Ми НЕ входимо в систему, а просимо перевірити пошту
+      alert(
+        regData.message ||
+          "Реєстрація успішна! Будь ласка, перевірте пошту для активації акаунту."
+      );
+
+      // Очищаємо поля
+      document.getElementById("authEmail").value = "";
+      document.getElementById("authPassword").value = "";
+
+      // currentUser залишається null
+    } else {
+      // E) Помилка реєстрації
+      alert("Помилка реєстрації: " + (regData.error || "Unknown error"));
+    }
   } catch (err) {
-    alert("Помилка реєстрації: " + err.message);
+    console.error(err);
+    alert("Помилка з'єднання з сервером.");
   }
 });
 

@@ -1,4 +1,6 @@
-require('dotenv').config(); // <--- ОБОВ'ЯЗКОВО ПЕРШИМ!
+require('dotenv').config(); 
+const cors = require('cors'); // Додай зверху
+app.use(cors()); // Додай це перед усіма маршрутами! Це дозволить запити з будь-якого сайту.
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -9,7 +11,7 @@ const { calculateTotal } = require("./utils");
 const { sendVerificationEmail, sendTicketEmail } = require("./mailer");
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Зміни цей порт, якщо твій сайт (Live Server) працює на іншому
 const FRONTEND_URL = "http://localhost:5500/airline-project/ui/index.html";
