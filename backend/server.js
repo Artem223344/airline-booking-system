@@ -1,22 +1,21 @@
-require('dotenv').config(); 
-const cors = require('cors'); // Додай зверху
-app.use(cors()); // Додай це перед усіма маршрутами! Це дозволить запити з будь-якого сайту.
+require("dotenv").config(); // 1. Має бути найпершим
 const express = require("express");
 const bodyParser = require("body-parser");
-const cors = require("cors");
+const cors = require("cors"); // 2. Підключаємо один раз
 const fs = require("fs");
 const path = require("path");
 const { calculateTotal } = require("./utils");
-// Імпортуємо нові функції пошти (переконайся, що в mailer.js вони називаються так само)
+// Переконайся, що шлях правильний
 const { sendVerificationEmail, sendTicketEmail } = require("./mailer");
 
-const app = express();
+const app = express(); // 3. Створюємо додаток (app) тут
 const PORT = process.env.PORT || 3000;
 
-// Зміни цей порт, якщо твій сайт (Live Server) працює на іншому
-const FRONTEND_URL = "http://localhost:5500/airline-project/ui/index.html";
+// 4. Це дозволить кнопці з пошти працювати і на локалці, і на сервері
+// (На Render потім додаси змінну CLIENT_URL)
+const FRONTEND_URL = process.env.CLIENT_URL || "http://localhost:5500/airline-project/ui/index.html";
 
-app.use(cors());
+app.use(cors()); // 5. Тепер це спрацює, бо app вже існує
 app.use(bodyParser.json());
 
 const DB_PATH = path.join(__dirname, "db.json");
